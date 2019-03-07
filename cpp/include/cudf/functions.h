@@ -2263,17 +2263,6 @@ gdf_error gdf_comparison_static_f64(gdf_column *lhs, double value, gdf_column *o
  */
 gdf_error gdf_comparison(gdf_column *lhs, gdf_column *rhs, gdf_column *output,gdf_comparison_operator operation);
 
-/**
- * @brief  takes a stencil and uses it to compact a colum e.g. remove all values for which the stencil = 0
- *
- * @param[in] gdf_column of input of any type
- * @param[in] gdf_column holding the stencil
- * @param[out] output gdf_column of same type as input. The output memory needs to be preallocated to be the same size as input
- *
- * @returns GDF_SUCCESS upon successful compute, otherwise returns appropriate error code
- */
-gdf_error gdf_apply_boolean_mask(gdf_column *lhs, gdf_column * stencil, gdf_column * output);
-
 
 /*
  * Hashing
