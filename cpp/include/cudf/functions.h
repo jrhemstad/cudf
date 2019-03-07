@@ -2272,7 +2272,7 @@ gdf_error gdf_comparison(gdf_column *lhs, gdf_column *rhs, gdf_column *output,gd
  *
  * @returns GDF_SUCCESS upon successful compute, otherwise returns appropriate error code
  */
-gdf_error gdf_apply_stencil(gdf_column *lhs, gdf_column * stencil, gdf_column * output);
+gdf_error gdf_apply_boolean_mask(gdf_column *lhs, gdf_column * stencil, gdf_column * output);
 
 
 /*

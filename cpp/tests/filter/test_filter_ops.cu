@@ -66,7 +66,7 @@ TEST_F(FilterOperationsTest, usage_example) {
     check_column_for_comparison_operation<LeftValueType, RightValueType>(&lhs, &rhs, &output, gdf_operator);
 
     /// lhs.dtype === rhs.dtype
-    gdf_apply_stencil(&lhs, &output, &rhs);
+    gdf_apply_boolean_mask(&lhs, &output, &rhs);
 
     check_column_for_stencil_operation<LeftValueType, RightValueType>(&lhs, &output, &rhs);
 
@@ -100,7 +100,7 @@ void test_filterops_using_templates(gdf_comparison_operator gdf_operator = GDF_E
             check_column_for_comparison_operation<LeftValueType, RightValueType>(&lhs, &rhs, &output, gdf_operator);
 
             if (lhs.dtype == rhs.dtype ) {
-                gdf_apply_stencil(&lhs, &output, &rhs);
+                gdf_apply_boolean_mask(&lhs, &output, &rhs);
                 check_column_for_stencil_operation<LeftValueType, RightValueType>(&lhs, &output, &rhs);
             }
 
