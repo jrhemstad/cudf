@@ -153,28 +153,28 @@ template <typename T, gdf_dtype type_id>
 CUDA_HOST_DEVICE_CALLABLE
 wrapper<T,type_id> operator+(wrapper<T, type_id> const &lhs, wrapper<T, type_id> const &rhs)
 {
-  return wrapper<T, type_id>{lhs.value + rhs.value};
+  return wrapper<T, type_id>{ static_cast<T>(lhs.value + rhs.value) };
 }
 
 template <typename T, gdf_dtype type_id>
 CUDA_HOST_DEVICE_CALLABLE
 wrapper<T,type_id> operator-(wrapper<T,type_id> const& lhs, wrapper<T,type_id> const& rhs)
 {
-  return wrapper<T, type_id>{lhs.value - rhs.value};
+  return wrapper<T, type_id>{ static_cast<T>(lhs.value - rhs.value) };
 }
 
 template <typename T, gdf_dtype type_id>
 CUDA_HOST_DEVICE_CALLABLE
 wrapper<T,type_id> operator*(wrapper<T,type_id> const& lhs, wrapper<T,type_id> const& rhs)
 {
-  return wrapper<T, type_id>{lhs.value * rhs.value};
+  return wrapper<T, type_id>{ static_cast<T>(lhs.value * rhs.value) };
 }
 
 template <typename T, gdf_dtype type_id>
 CUDA_HOST_DEVICE_CALLABLE
 wrapper<T,type_id> operator/(wrapper<T,type_id> const& lhs, wrapper<T,type_id> const& rhs)
 {
-  return wrapper<T, type_id>{lhs.value / rhs.value};
+  return wrapper<T, type_id>{ static_cast<T>(lhs.value / rhs.value) };
 }
 
 // prefix increment operator
@@ -299,6 +299,9 @@ using timestamp = detail::wrapper<gdf_timestamp, GDF_TIMESTAMP>;
 using date32 = detail::wrapper<gdf_date32, GDF_DATE32>;
 
 using date64 = detail::wrapper<gdf_date64, GDF_DATE64>;
+
+using bool8 	= detail::wrapper<gdf_bool, GDF_BOOL>;
+
 
 } // namespace cudf
 

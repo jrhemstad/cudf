@@ -8,6 +8,7 @@ typedef	long	gdf_date64;
 typedef	int		gdf_date32;
 typedef	int		gdf_category;
 typedef	long	gdf_timestamp;
+typedef signed char gdf_bool;
 
 
  /**
@@ -26,7 +27,8 @@ typedef enum {
     GDF_TIMESTAMP,	///< Exact timestamp encoded with int64 since UNIX epoch (Default unit millisecond)
     GDF_CATEGORY,
     GDF_STRING,
-    N_GDF_TYPES, 	///< additional types should go BEFORE N_GDF_TYPES
+    GDF_BOOL,
+    N_GDF_TYPES, 	/* additional types should go BEFORE N_GDF_TYPES */
 } gdf_dtype;
 
 

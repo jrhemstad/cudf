@@ -1,6 +1,7 @@
 # cuDF 0.7.0 (Date TBD)
 
 ## New Features
+- PR #1142 Added `GDF_BOOL` column type
 
 ...
 
@@ -19,6 +20,7 @@
 
 - PR #760 Raise `FileNotFoundError` instead of `GDF_FILE_ERROR` in `read_csv` if the file does not exist
 - PR #539 Add Python bindings for replace function
+- PR #817 Added GDF_BOOL data type to CUDA code
 - PR #823 Add Doxygen configuration to enable building HTML documentation for libcudf C/C++ API
 - PR #807 CSV Reader: Add byte_range parameter to specify the range in the input file to be read
 - PR #857 Add Tail method for Series/DataFrame and update Head method to use iloc
@@ -56,6 +58,7 @@
 - PR #1091 Add `indicator=` and `suffixes=` keywords to merge
 - PR #1107 Add unsupported keywords to Series.fillna
 - PR #1136 Removed `gdf_concat` 
+
 
 ## Improvements
 
@@ -95,7 +98,6 @@
 - PR #1111 Added cudf::table
 - PR #1108 Sorting for datetime columns
 - PR #1120 Return a `Series` (not a `Column`) from `Series.cat.set_categories()`
-
 
 ## Bug Fixes
 
@@ -137,8 +139,10 @@
 - PR #1090 Updating Doxygen Comments
 - PR #1080 Fix dtypes returned from loc / iloc because of lists
 - PR #1102 CSV Reader: Minor fixes and memory usage improvements
+- PR #1137 Add prebuild script for CI
 - PR #1118 Enhanced the `DataFrame.from_records()` feature
 - PR #1129 Fix join performance with index parameter from using numpy array
+
 
 # cuDF 0.5.1 (05 Feb 2019)
 
