@@ -42,9 +42,10 @@ struct nonnull_and_true {
  */
 gdf_column apply_boolean_mask(gdf_column const *input,
                               gdf_column const *boolean_mask) {
-  CUDF_EXPECTS(input->size == boolean_mask->size, "Column size mistmatch");
 
-  gdf_column output{};
+  CUDF_EXPECTS(input->size == boolean_mask->size, "Column size mistmatch");
+  CUDF_EXPECTS(boolean_mask->dtype == GDF_BOOL, "Mask must be boolean type");
+
 
   // High Level Algorithm:
   // First, compute a `gather_map` from the boolean_mask that will gather
@@ -66,6 +67,12 @@ gdf_column apply_boolean_mask(gdf_column const *input,
   // Use the returned iterator to determine the size of the gather_map
   gdf_size_type output_size{
       static_cast<gdf_size_type>(end - gather_map.begin())};
+
+    
+  // Allocate/initialize output column
+  gdf_size_type column_byte_width{ gdf_dtype_size(input->dtype) };
+
+  gdf_column output{};
 
   return output;
 }
