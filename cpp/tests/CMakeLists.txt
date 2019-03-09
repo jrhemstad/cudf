@@ -211,6 +211,13 @@ set(TABLE_TEST_SRC
 
 ConfigureTest(TABLE_TEST "${TABLE_TEST_SRC}")
 
+# - stream compaction tests -------------------------------------------------------------------------------
+
+set(STREAM_COMPACTION_TEST_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/stream_compaction/stream_compaction.cu")
+
+ConfigureTest(STREAM_COMPACTION_TEST "${STREAM_COMPACTION_TEST_SRC}")
+
 
 ###################################################################################################
 ### enable testing ################################################################################

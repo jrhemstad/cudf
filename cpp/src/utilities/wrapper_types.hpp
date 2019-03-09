@@ -303,7 +303,7 @@ using date64 = detail::wrapper<gdf_date64, GDF_DATE64>;
 using bool8 = detail::wrapper<gdf_bool, GDF_BOOL>;
 
 // This is necessary for global, constant, non-fundamental types
-#define HOST_DEVICE_CONSTANT
+// to be accessible in both host and device code
 #ifdef __CUDA_ARCH__
 __device__ __constant__ static bool8 true_v{gdf_bool{1}};
 

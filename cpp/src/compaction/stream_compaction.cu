@@ -22,17 +22,27 @@
 #include "stream_compaction.hpp"
 #include "utilities/cudf_utils.h"
 #include "utilities/error_utils.hpp"
+#include <utilities/wrapper_types.hpp>
 
 namespace cudf {
 
 namespace {
 struct nonnull_and_true {
-  nonnull_and_true(gdf_column const boolean_mask) : mask{boolean_mask} {}
+  nonnull_and_true(gdf_column const boolean_mask)
+      : data{static_cast<cudf::bool8*>(boolean_mask.data)},
+        bitmask{boolean_mask.valid} {
+    CUDF_EXPECTS(boolean_mask.dtype == GDF_BOOL, "Expected boolean column");
+    CUDF_EXPECTS(boolean_mask.data != nullptr, "Null boolean_mask data");
+    CUDF_EXPECTS(boolean_mask.valid != nullptr, "Null boolean_mask bitmask");
+  }
 
-  __device__ bool operator()(gdf_index_type i) { return true; }
+  __device__ bool operator()(gdf_index_type i) {
+    return (cudf::true_v == data[i]) && gdf_is_valid(bitmask, i);
+  }
 
  private:
-  gdf_column const mask;
+  cudf::bool8 const * const data;
+  gdf_valid_type const * const bitmask;
 };
 }  // namespace
 
@@ -42,10 +52,10 @@ struct nonnull_and_true {
  */
 gdf_column apply_boolean_mask(gdf_column const *input,
                               gdf_column const *boolean_mask) {
-
+  CUDF_EXPECTS(nullptr != input, "Null input");
+  CUDF_EXPECTS(nullptr != boolean_mask, "Null boolean_mask");
   CUDF_EXPECTS(input->size == boolean_mask->size, "Column size mistmatch");
   CUDF_EXPECTS(boolean_mask->dtype == GDF_BOOL, "Mask must be boolean type");
-
 
   // High Level Algorithm:
   // First, compute a `gather_map` from the boolean_mask that will gather
@@ -68,9 +78,8 @@ gdf_column apply_boolean_mask(gdf_column const *input,
   gdf_size_type output_size{
       static_cast<gdf_size_type>(end - gather_map.begin())};
 
-    
   // Allocate/initialize output column
-  gdf_size_type column_byte_width{ gdf_dtype_size(input->dtype) };
+  gdf_size_type column_byte_width{gdf_dtype_size(input->dtype)};
 
   gdf_column output{};
 
