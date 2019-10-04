@@ -33,10 +33,13 @@ table::table(table const& other) : _num_rows{other.num_rows()} {
 // Move the contents of a vector `unique_ptr<column>`
 table::table(std::vector<std::unique_ptr<column>>&& columns)
     : _columns{std::move(columns)} {
-  CUDF_EXPECTS(columns.size() > 0, "Invalid number of columns");
-  _num_rows = columns[0]->size();
-  for (auto const& c : _columns) {
-    CUDF_EXPECTS(c->size() == num_rows(), "Column size mismatch.");
+  if (num_columns() > 0) {
+    _num_rows = _columns.front()->size();
+    CUDF_EXPECTS(std::all_of(_columns.begin(), _columns.end(),
+                             [this](auto const& c) {
+                               return _columns.front()->size() == c->size();
+                             }),
+                 "Column size mismatch");
   }
 }
 
