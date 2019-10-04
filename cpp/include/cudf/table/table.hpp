@@ -21,6 +21,10 @@
 #include <memory>
 #include <vector>
 
+/**---------------------------------------------------------------------------*
+ * @file table.hpp
+ * @brief A `table` owns a set of columns all with equal number of elements.
+ *---------------------------------------------------------------------------**/
 namespace cudf {
 namespace exp {
 
@@ -40,6 +44,8 @@ class table {
   /**---------------------------------------------------------------------------*
    * @brief Moves the contents from a vector of `unique_ptr`s to columns to
    * construct a new table.
+   *
+   * @throws cudf::logic_error if all columns do not have the same `size()`.
    *
    * @param columns The vector of `unique_ptr`s to columns whose contents will
    * be moved into the new table.
