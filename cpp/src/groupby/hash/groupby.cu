@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
+#include <cudf/aggregation.hpp>
 #include <cudf/column/column.hpp>
 #include <cudf/column/column_view.hpp>
-#include <cudf/groupby.hpp>
+#include <cudf/detail/aggregation.hpp>
 #include <cudf/detail/groupby.hpp>
+#include <cudf/groupby.hpp>
 #include <cudf/table/table.hpp>
 #include <cudf/table/table_view.hpp>
 #include <cudf/types.hpp>
-#include <cudf/aggregation.hpp>
-#include <cudf/detail/aggregation.hpp>
 
 #include <memory>
 #include <utility>
@@ -82,11 +82,30 @@ bool can_use_hash_groupby(table_view const& keys,
       });
 }
 
+auto foo(std::vector<aggregation_request> const& requests) {
+  std::vector<column_view> request_values;
+  std::vector<aggregation::Kind> aggregation_kinds;
+  // Flatten the requests into two vectors: the column of values to aggregate
+  // and the kind of aggregation
+  std::for_each(
+      requests.begin(), requests.end(),
+      [&aggregation_kinds, &request_values](auto const& request) {
+        request_values.insert(request_values.end(), request.aggregations.size(),
+                              request.values);
+        std::transform(request.aggregations.begin(), request.aggregations.end(),
+                       std::back_inserter(aggregation_kinds),
+                       [](auto const& agg) { return agg->kind; });
+      });
+
+  return std::make_pair(table_view(request_values), aggregation_kinds);
+}
+
 // Hash-based groupby
 std::pair<std::unique_ptr<table>, std::vector<aggregation_result>> groupby(
     table_view const& keys, std::vector<aggregation_request> const& requests,
     bool ignore_null_keys, cudaStream_t stream,
     rmm::mr::device_memory_resource* mr) {
+  auto flattened = foo(requests);
   // stub
   return std::make_pair(std::make_unique<table>(),
                         std::vector<aggregation_result>{});
