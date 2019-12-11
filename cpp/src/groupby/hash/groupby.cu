@@ -73,7 +73,7 @@ constexpr bool is_hash_aggregation(aggregation::Kind t) {
  * @return false A hash-based groupby should not be used
  */
 bool can_use_hash_groupby(table_view const& keys,
-                      std::vector<aggregation_request> const& requests) {
+                          std::vector<aggregation_request> const& requests) {
   return std::all_of(
       requests.begin(), requests.end(), [](aggregation_request const& r) {
         return std::all_of(
@@ -82,22 +82,28 @@ bool can_use_hash_groupby(table_view const& keys,
       });
 }
 
-auto foo(std::vector<aggregation_request> const& requests) {
-  std::vector<column_view> request_values;
-  std::vector<aggregation::Kind> aggregation_kinds;
-  // Flatten the requests into two vectors: the column of values to aggregate
-  // and the kind of aggregation
-  std::for_each(
-      requests.begin(), requests.end(),
-      [&aggregation_kinds, &request_values](auto const& request) {
-        request_values.insert(request_values.end(), request.aggregations.size(),
-                              request.values);
-        std::transform(request.aggregations.begin(), request.aggregations.end(),
-                       std::back_inserter(aggregation_kinds),
-                       [](auto const& agg) { return agg->kind; });
-      });
+struct detail_request {
+  size_type request_id;    ///< Index of originating request
+  column_view values;      ///< Values to aggregate
+  aggregation::Kind kind;  ///< Aggregation to perform
+};
 
-  return std::make_pair(table_view(request_values), aggregation_kinds);
+auto flatten(std::vector<aggregation_request> const& requests) {
+  std::vector<detail_request> detail_requests;
+
+  size_type request_id{0};
+  // Flatten requests into a single vector of detail_requests
+  for (auto const& request : requests) {
+    std::transform(
+        request.aggregations.begin(), request.aggregations.end(),
+        std::back_inserter(detail_requests),
+        [request_id, &request](auto const& agg) {
+          return detail_request{request_id, request.values, agg->kind};
+        });
+    ++request_id;
+  }
+
+  return detail_requests;
 }
 
 // Hash-based groupby
@@ -105,7 +111,7 @@ std::pair<std::unique_ptr<table>, std::vector<aggregation_result>> groupby(
     table_view const& keys, std::vector<aggregation_request> const& requests,
     bool ignore_null_keys, cudaStream_t stream,
     rmm::mr::device_memory_resource* mr) {
-  auto flattened = foo(requests);
+  auto flattened = flatten(requests);
   // stub
   return std::make_pair(std::make_unique<table>(),
                         std::vector<aggregation_result>{});
