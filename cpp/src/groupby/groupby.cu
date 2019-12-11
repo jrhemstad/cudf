@@ -18,7 +18,7 @@
 #include <cudf/column/column_factories.hpp>
 #include <cudf/column/column_view.hpp>
 #include <cudf/copying.hpp>
-#include <cudf/detail/aggregation.hpp>
+#include <cudf/detail/aggregation/aggregation.hpp>
 #include <cudf/detail/groupby.hpp>
 #include <cudf/groupby.hpp>
 #include <cudf/table/table.hpp>

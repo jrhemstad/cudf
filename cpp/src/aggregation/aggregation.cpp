@@ -15,7 +15,7 @@
  */
 
 #include <cudf/aggregation.hpp>
-#include <cudf/detail/aggregation.hpp>
+#include <cudf/detail/aggregation/aggregation.hpp>
 #include <cudf/utilities/type_dispatcher.hpp>
 
 #include <memory>
