@@ -57,26 +57,25 @@ std::unique_ptr<aggregation> make_quantile_aggregation(
 
 namespace detail {
 namespace {
-template <typename SourceType>
-struct dispatch_aggregation_kind {
-  template <aggregation::Kind k>
+template <typename Source, aggregation::Kind k>
+struct target_type_functor {
   constexpr data_type operator()() const noexcept {
-    return data_type{
-        cudf::experimental::type_to_id<target_type_t<SourceType, k>>()};
+    return data_type{type_to_id<target_type_t<Source, k>>()};
   }
 };
 
-struct dispatch_source_type {
-  template <typename SourceType>
-  constexpr data_type operator()(aggregation::Kind k) const noexcept {
-    return aggregation_dispatcher(k, dispatch_aggregation_kind<SourceType>{});
+template <typename Source, aggregation::Kind k>
+struct is_valid_aggregation_impl {
+  constexpr bool operator()() const noexcept {
+    return is_valid_aggregation<Source, k>();
   }
 };
 }  // namespace
 
 // Return target data_type for the given source_type and aggregation
-data_type target_type(data_type source_type, aggregation::Kind k) {
-  return cudf::experimental::type_dispatcher(source_type, dispatch_source_type{}, k);
+data_type target_type(data_type source, aggregation::Kind k) {
+  return dispatch_type_and_aggregation<target_type_functor>(source, k);
+}
 }
 }  // namespace detail
 }  // namespace experimental
