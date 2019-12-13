@@ -76,6 +76,10 @@ struct is_valid_aggregation_impl {
 data_type target_type(data_type source, aggregation::Kind k) {
   return dispatch_type_and_aggregation<target_type_functor>(source, k);
 }
+
+// Verifies the aggregation `k` is valid on the type `source`
+bool is_valid_aggregation(data_type source, aggregation::Kind k) {
+  return dispatch_type_and_aggregation<is_valid_aggregation_impl>(source, k);
 }
 }  // namespace detail
 }  // namespace experimental

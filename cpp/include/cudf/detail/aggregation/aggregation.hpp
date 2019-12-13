@@ -177,18 +177,6 @@ template <typename Source, aggregation::Kind k>
 using target_type_t = typename target_type_impl<Source, k>::type;
 
 /**
- * @brief Indicates whether the specified aggregation `k` is valid to perform on
- * the type `Source`.
- *
- * @tparam Source Type on which the aggregation is performed
- * @tparam k The aggregation to perform
- */
-template <typename Source, aggregation::Kind k>
-constexpr inline bool is_valid_aggregation() {
-  return (not std::is_void<target_type_t<Source, k>>::value);
-}
-
-/**
  * @brief Dispatches  k as a non-type template parameter to a callable,  f.
  *
  * @tparam F Type of callable
@@ -269,6 +257,27 @@ decltype(auto) dispatch_type_and_aggregation(data_type type,
  * elements
  */
 data_type target_type(data_type source_type, aggregation::Kind k);
+
+/**
+ * @brief Indicates whether the specified aggregation `k` is valid to perform on
+ * the type `Source`.
+ *
+ * @tparam Source Type on which the aggregation is performed
+ * @tparam k The aggregation to perform
+ */
+template <typename Source, aggregation::Kind k>
+constexpr inline bool is_valid_aggregation() {
+  return (not std::is_void<target_type_t<Source, k>>::value);
+}
+
+/**
+ * @brief Indicates whether the specified aggregation `k` is valid to perform on
+ * the `data_type` `source`.
+ *
+ * @param source Source `data_type` on which the aggregation is performed
+ * @param k The aggregation to perform
+ */
+bool is_valid_aggregation(data_type source, aggregation::Kind k);
 
 }  // namespace detail
 }  // namespace experimental
