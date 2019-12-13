@@ -35,7 +35,17 @@ class aggregation {
   /**
    * @brief Possible aggregation operations
    */
-  enum Kind { SUM, MIN, MAX, COUNT, MEAN, MEDIAN, QUANTILE };
+  enum Kind {
+    SUM,       ///< sum reduction
+    MIN,       ///< min reduction
+    MAX,       ///< max reduction
+    COUNT,     ///< count number of elements
+    MEAN,      ///< arithmetic mean reduction
+    MEDIAN,    ///< median reduction
+    QUANTILE,  ///< compute specified quantile(s)
+    ARGMAX,    ///< Index of max element
+    ARGMIN     ///< Index of min element
+  };
 
   aggregation(aggregation::Kind a) : kind{a} {}
   Kind kind;  ///< The aggregation to perform
@@ -62,11 +72,29 @@ struct quantile_aggregation : aggregation {
  *
  * @tparam k The `aggregation::Kind` value to map to its corresponding operator
  */
-template <aggregation::Kind k> struct corresponding_operator { using type = void; };
-template <> struct corresponding_operator<aggregation::MIN> { using type = DeviceMin; };
-template <> struct corresponding_operator<aggregation::MAX> { using type = DeviceMax; };
-template <> struct corresponding_operator<aggregation::SUM> { using type = DeviceSum; };
-template <> struct corresponding_operator<aggregation::COUNT> { using type = DeviceSum; };
+template <aggregation::Kind k>
+struct corresponding_operator {
+  using type = void;
+};
+template <>
+struct corresponding_operator<aggregation::MIN> {
+  using type = DeviceMin;
+};
+template <>
+struct corresponding_operator<aggregation::MAX> {
+  using type = DeviceMax;
+};
+template <>
+struct corresponding_operator<aggregation::SUM> {
+  using type = DeviceSum;
+};
+template <>
+struct corresponding_operator<aggregation::COUNT> {
+  using type = DeviceSum;
+};
+
+// TODO Add operators for argmax/argmin
+
 template <aggregation::Kind k>
 using corresponding_operator_t = typename corresponding_operator<k>::type;
 
@@ -77,28 +105,38 @@ using corresponding_operator_t = typename corresponding_operator<k>::type;
  * @tparam k The aggregation performed
  *---------------------------------------------------------------------------**/
 template <typename SourceType, aggregation::Kind k, typename Enable = void>
-struct target_type_impl { using type = void; };
+struct target_type_impl {
+  using type = void;
+};
 
 // Computing MIN of SourceType, use SourceType accumulator
 template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::MIN> { using type = SourceType; };
+struct target_type_impl<SourceType, aggregation::MIN> {
+  using type = SourceType;
+};
 
 // Computing MAX of SourceType, use SourceType accumulator
 template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::MAX> { using type = SourceType; };
+struct target_type_impl<SourceType, aggregation::MAX> {
+  using type = SourceType;
+};
 
 // Always use size_type accumulator for COUNT
 template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::COUNT> { using type = cudf::size_type; };
+struct target_type_impl<SourceType, aggregation::COUNT> {
+  using type = cudf::size_type;
+};
 
 // Always use `double` for MEAN
 template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::MEAN> { using type = double; };
+struct target_type_impl<SourceType, aggregation::MEAN> {
+  using type = double;
+};
 
 // Summing integers of any type, always use int64_t accumulator
 template <typename SourceType>
 struct target_type_impl<SourceType, aggregation::SUM,
-                   std::enable_if_t<std::is_integral<SourceType>::value>> {
+                        std::enable_if_t<std::is_integral<SourceType>::value>> {
   using type = int64_t;
 };
 
@@ -110,18 +148,32 @@ struct target_type_impl<
   using type = SourceType;
 };
 
-// Always use `double` for quantile 
+// Always use `double` for quantile
 template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::QUANTILE> { using type = double; };
+struct target_type_impl<SourceType, aggregation::QUANTILE> {
+  using type = double;
+};
 
-// MEDIAN is a special case of a QUANTILE  
+// MEDIAN is a special case of a QUANTILE
 template <typename SourceType>
 struct target_type_impl<SourceType, aggregation::MEDIAN> {
-   using type = target_type_impl<SourceType, aggregation::QUANTILE>; 
+  using type = target_type_impl<SourceType, aggregation::QUANTILE>;
+};
+
+// Always use `size_type` for ARGMAX index
+template <typename SourceType>
+struct target_type_impl<SourceType, aggregatoin::ARGMAX> {
+  using type = size_type;
+};
+
+// Always use `size_type` for ARGMIN index
+template <typename SourceType>
+struct target_type_impl<SourceType, aggregatoin::ARGMIN> {
+  using type = size_type;
 };
 
 /**
- * @brief Helper alias to get the accumulator type for performing aggregation 
+ * @brief Helper alias to get the accumulator type for performing aggregation
  * `k` on elements of type `SourceType`
  *
  * @tparam SourceType The type on which the aggregation is computed
@@ -140,16 +192,27 @@ using target_type_t = typename target_type_impl<SourceType, k>::type;
  * @return Forwards the return value of the callable.
  */
 template <typename F>
-decltype(auto) aggregation_dispatcher(aggregation::Kind k, F f){
-    switch(k){
-        case aggregation::SUM:      return f.template operator()<aggregation::SUM>();
-        case aggregation::MIN:      return f.template operator()<aggregation::MIN>();
-        case aggregation::MAX:      return f.template operator()<aggregation::MAX>();
-        case aggregation::COUNT:    return f.template operator()<aggregation::COUNT>();
-        case aggregation::MEAN:     return f.template operator()<aggregation::MEAN>();
-        case aggregation::MEDIAN:   return f.template operator()<aggregation::MEDIAN>();
-        case aggregation::QUANTILE: return f.template operator()<aggregation::QUANTILE>();
-    }
+decltype(auto) aggregation_dispatcher(aggregation::Kind k, F f) {
+  switch (k) {
+    case aggregation::SUM:
+      return f.template operator()<aggregation::SUM>();
+    case aggregation::MIN:
+      return f.template operator()<aggregation::MIN>();
+    case aggregation::MAX:
+      return f.template operator()<aggregation::MAX>();
+    case aggregation::COUNT:
+      return f.template operator()<aggregation::COUNT>();
+    case aggregation::MEAN:
+      return f.template operator()<aggregation::MEAN>();
+    case aggregation::MEDIAN:
+      return f.template operator()<aggregation::MEDIAN>();
+    case aggregation::QUANTILE:
+      return f.template operator()<aggregation::QUANTILE>();
+    case aggregation::ARGMAX:
+      return f.template operator()<aggregation::ARGMAX>();
+    case aggregation::ARGMIN:
+      return f.template operator()<aggregation::ARGMIN>();
+  }
 }
 
 /**
