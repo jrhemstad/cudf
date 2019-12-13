@@ -95,74 +95,74 @@ using corresponding_operator_t = typename corresponding_operator<k>::type;
 /**---------------------------------------------------------------------------*
  * @brief Determines accumulator type based on input type and aggregation.
  *
- * @tparam SourceType The type on which the aggregation is computed
+ * @tparam Source The type on which the aggregation is computed
  * @tparam k The aggregation performed
  *---------------------------------------------------------------------------**/
-template <typename SourceType, aggregation::Kind k, typename Enable = void>
+template <typename Source, aggregation::Kind k, typename Enable = void>
 struct target_type_impl {
   using type = void;
 };
 
-// Computing MIN of SourceType, use SourceType accumulator
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::MIN> {
-  using type = SourceType;
+// Computing MIN of Source, use Source accumulator
+template <typename Source>
+struct target_type_impl<Source, aggregation::MIN> {
+  using type = Source;
 };
 
-// Computing MAX of SourceType, use SourceType accumulator
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::MAX> {
-  using type = SourceType;
+// Computing MAX of Source, use Source accumulator
+template <typename Source>
+struct target_type_impl<Source, aggregation::MAX> {
+  using type = Source;
 };
 
 // Always use size_type accumulator for COUNT
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::COUNT> {
+template <typename Source>
+struct target_type_impl<Source, aggregation::COUNT> {
   using type = cudf::size_type;
 };
 
 // Always use `double` for MEAN
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::MEAN> {
+template <typename Source>
+struct target_type_impl<Source, aggregation::MEAN> {
   using type = double;
 };
 
 // Summing integers of any type, always use int64_t accumulator
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::SUM,
-                        std::enable_if_t<std::is_integral<SourceType>::value>> {
+template <typename Source>
+struct target_type_impl<Source, aggregation::SUM,
+                        std::enable_if_t<std::is_integral<Source>::value>> {
   using type = int64_t;
 };
 
 // Summing float/doubles, use same type accumulator
-template <typename SourceType>
+template <typename Source>
 struct target_type_impl<
-    SourceType, aggregation::SUM,
-    std::enable_if_t<std::is_floating_point<SourceType>::value>> {
-  using type = SourceType;
+    Source, aggregation::SUM,
+    std::enable_if_t<std::is_floating_point<Source>::value>> {
+  using type = Source;
 };
 
 // Always use `double` for quantile
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::QUANTILE> {
+template <typename Source>
+struct target_type_impl<Source, aggregation::QUANTILE> {
   using type = double;
 };
 
 // MEDIAN is a special case of a QUANTILE
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::MEDIAN> {
-  using type = target_type_impl<SourceType, aggregation::QUANTILE>;
+template <typename Source>
+struct target_type_impl<Source, aggregation::MEDIAN> {
+  using type = target_type_impl<Source, aggregation::QUANTILE>;
 };
 
 // Always use `size_type` for ARGMAX index
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::ARGMAX> {
+template <typename Source>
+struct target_type_impl<Source, aggregation::ARGMAX> {
   using type = size_type;
 };
 
 // Always use `size_type` for ARGMIN index
-template <typename SourceType>
-struct target_type_impl<SourceType, aggregation::ARGMIN> {
+template <typename Source>
+struct target_type_impl<Source, aggregation::ARGMIN> {
   using type = size_type;
 };
 
