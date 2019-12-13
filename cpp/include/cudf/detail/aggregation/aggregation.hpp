@@ -221,6 +221,44 @@ decltype(auto) aggregation_dispatcher(aggregation::Kind k, F f) {
   }
 }
 
+template <typename Source, template <typename, aggregation::Kind> typename F>
+struct dispatch_aggregation {
+  template <aggregation::Kind k>
+  constexpr auto operator()() const noexcept {
+    return F<Source, k>{}();
+  }
+};
+
+template <template <typename, aggregation::Kind> typename F>
+struct dispatch_source {
+  template <typename Source>
+  constexpr auto operator()(aggregation::Kind k) const noexcept {
+    return aggregation_dispatcher(k, dispatch_aggregation<Source, F>{});
+  }
+};
+
+/**
+ * @brief Dispatches both a type and `aggregation::Kind` template parameters to
+ * a callable.
+ *
+ * This function expects a callable template-template parameter `F` with two
+ * template parameters. The first is a type dispatched from `type`. The second
+ * is an `aggregation::Kind` dispatched from `k`.
+ *
+ * @tparam F The template-template callable with a type and `aggregation::Kind`
+ * template parameters.
+ * @param type The `data_type` used to dispatch a type for the first template
+ * parameter of the callable `F`
+ * @param k The `aggregation::Kind` used to dispatch an `aggregation::Kind`
+ * non-type template parameter for the second template parameter of the callable
+ * `F`.
+ */
+template <template <typename, aggregation::Kind> typename F>
+decltype(auto) dispatch_type_and_aggregation(data_type type,
+                                             aggregation::Kind k) {
+  return type_dispatcher(type, dispatch_source<F>{}, k);
+}
+
 /**
  * @brief Returns the target `data_type` for the specified aggregation  k
  * performed on elements of type  source_type.
