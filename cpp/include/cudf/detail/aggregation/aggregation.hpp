@@ -168,13 +168,25 @@ struct target_type_impl<Source, aggregation::ARGMIN> {
 
 /**
  * @brief Helper alias to get the accumulator type for performing aggregation
- * `k` on elements of type `SourceType`
+ * `k` on elements of type `Source`
  *
- * @tparam SourceType The type on which the aggregation is computed
+ * @tparam Source The type on which the aggregation is computed
  * @tparam k The aggregation performed
  */
-template <typename SourceType, aggregation::Kind k>
-using target_type_t = typename target_type_impl<SourceType, k>::type;
+template <typename Source, aggregation::Kind k>
+using target_type_t = typename target_type_impl<Source, k>::type;
+
+/**
+ * @brief Indicates whether the specified aggregation `k` is valid to perform on
+ * the type `Source`.
+ *
+ * @tparam Source Type on which the aggregation is performed
+ * @tparam k The aggregation to perform
+ */
+template <typename Source, aggregation::Kind k>
+constexpr inline bool is_valid_aggregation() {
+  return (not std::is_void<target_type_t<Source, k>>::value);
+}
 
 /**
  * @brief Dispatches  k as a non-type template parameter to a callable,  f.
