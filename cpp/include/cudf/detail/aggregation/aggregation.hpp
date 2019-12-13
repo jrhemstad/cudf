@@ -88,12 +88,6 @@ template <>
 struct corresponding_operator<aggregation::SUM> {
   using type = DeviceSum;
 };
-template <>
-struct corresponding_operator<aggregation::COUNT> {
-  using type = DeviceSum;
-};
-
-// TODO Add operators for argmax/argmin
 
 template <aggregation::Kind k>
 using corresponding_operator_t = typename corresponding_operator<k>::type;
@@ -162,13 +156,13 @@ struct target_type_impl<SourceType, aggregation::MEDIAN> {
 
 // Always use `size_type` for ARGMAX index
 template <typename SourceType>
-struct target_type_impl<SourceType, aggregatoin::ARGMAX> {
+struct target_type_impl<SourceType, aggregation::ARGMAX> {
   using type = size_type;
 };
 
 // Always use `size_type` for ARGMIN index
 template <typename SourceType>
-struct target_type_impl<SourceType, aggregatoin::ARGMIN> {
+struct target_type_impl<SourceType, aggregation::ARGMIN> {
   using type = size_type;
 };
 
