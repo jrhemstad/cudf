@@ -54,6 +54,14 @@ std::unique_ptr<aggregation> make_quantile_aggregation(
   aggregation* a = new detail::quantile_aggregation{q, i};
   return std::unique_ptr<aggregation>(a);
 }
+/// Factory to create a ARGMAX aggregation
+std::unique_ptr<aggregation> make_argmax_aggregation() {
+  return std::make_unique<aggregation>(aggregation::ARGMAX);
+}
+/// Factory to create a ARGMIN aggregation
+std::unique_ptr<aggregation> make_argmin_aggregation() {
+  return std::make_unique<aggregation>(aggregation::ARGMIN);
+}
 
 namespace detail {
 namespace {
