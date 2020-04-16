@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "log.h"
+
 #include <cudf/table/row_operators.cuh>
 #include <cudf/table/table_device_view.cuh>
 #include <cudf/column/column_factories.hpp>
@@ -29,6 +31,7 @@ namespace cudf {
 namespace experimental {
 namespace detail {
 
+
 // Create permuted row indices that would materialize sorted order
 template <bool stable = false>
 std::unique_ptr<column> sorted_order(table_view input,
@@ -36,9 +39,12 @@ std::unique_ptr<column> sorted_order(table_view input,
                                      std::vector<null_order> const& null_precedence,
                                      rmm::mr::device_memory_resource* mr,
                                      cudaStream_t stream) {
+
   if (input.num_rows() == 0 or input.num_columns() == 0) {
     return cudf::make_numeric_column(data_type(experimental::type_to_id<size_type>()), 0);
   }
+
+  log_sort(input);
 
   if (not column_order.empty()) {
     CUDF_EXPECTS(
