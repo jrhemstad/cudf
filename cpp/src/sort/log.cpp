@@ -14,7 +14,7 @@ inline std::string get_type_name(cudf::data_type type) {
 }
 }  // namespace
 
-void log_sort(cudf::table_view t) {
+std::unique_ptr<cudf::process_range> log_sort(cudf::table_view t) {
   static std::shared_ptr<spdlog::logger> logger =
       std::make_shared<spdlog::logger>(
           "SORT", std::make_shared<spdlog::sinks::basic_file_sink_mt>(
@@ -26,5 +26,8 @@ void log_sort(cudf::table_view t) {
     msg += " type: ";
     msg += get_type_name(t.column(0).type());
     logger->info(msg);
+    return std::make_unique<cudf::process_range>("single_column_sort", nvtx3::rgb(255,105,180));
   }
+
+  return nullptr;
 }

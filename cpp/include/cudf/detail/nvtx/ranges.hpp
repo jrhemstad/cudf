@@ -34,6 +34,8 @@ struct libcudf_domain {
  */
 using thread_range = ::nvtx3::domain_thread_range<libcudf_domain>;
 
+using process_range = ::nvtx3::domain_process_range<libcudf_domain>;
+
 }  // namespace cudf
 
 /**

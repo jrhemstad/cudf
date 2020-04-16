@@ -44,7 +44,7 @@ std::unique_ptr<column> sorted_order(table_view input,
     return cudf::make_numeric_column(data_type(experimental::type_to_id<size_type>()), 0);
   }
 
-  log_sort(input);
+  auto range = log_sort(input);
 
   if (not column_order.empty()) {
     CUDF_EXPECTS(

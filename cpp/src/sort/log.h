@@ -2,5 +2,7 @@
 #pragma once
 
 #include <cudf/types.hpp>
+#include <cudf/detail/nvtx/ranges.hpp>
+#include <memory>
 
-void log_sort(cudf::table_view t);
+std::unique_ptr<cudf::process_range> log_sort(cudf::table_view t);
