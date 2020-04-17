@@ -21,7 +21,10 @@ std::unique_ptr<cudf::process_range> log_sort(cudf::table_view t) {
                       "sorts.txt", true));
 
   if (t.num_columns() == 1 and not t.column(0).has_nulls()) {
-    std::string msg{"single column sort without nulls. Size: "};
+    std::string msg{"single column sort without nulls. "};
+    msg += " query: ";
+    msg += std::getenv("QUERY_NUMBER");
+    msg += " Size: "
     msg += std::to_string(t.num_rows());
     msg += " type: ";
     msg += get_type_name(t.column(0).type());
