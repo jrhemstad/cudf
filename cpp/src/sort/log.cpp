@@ -24,7 +24,7 @@ std::unique_ptr<cudf::process_range> log_sort(cudf::table_view t) {
   static std::shared_ptr<spdlog::logger> logger =
       std::make_shared<spdlog::logger>(
           "SORT", std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-                      log_filename, true));
+                      log_filename, false));
 
 
   if (t.num_columns() == 1 and not t.column(0).has_nulls()) {
