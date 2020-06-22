@@ -28,6 +28,7 @@
 #include <cudf/table/table_view.hpp>
 #include <cudf/types.hpp>
 #include <cudf/utilities/type_dispatcher.hpp>
+#include <rmm/device_uvector.hpp>
 
 #include <thrust/binary_search.h>
 #include <thrust/iterator/constant_iterator.h>
@@ -72,7 +73,7 @@ struct compute_offsets {
   cudf::column_view const* p_column = nullptr;
 
   template <typename T>
-  std::enable_if_t<std::is_integral<T>::value, rmm::device_vector<cudf::size_type>> operator()(
+  std::enable_if_t<std::is_integral<T>::value, rmm::device_uvector<cudf::size_type>> operator()(
     bool check_count, cudaStream_t stream = 0)
   {
     // static_cast is necessary due to bool
@@ -82,7 +83,7 @@ struct compute_offsets {
       CUDF_EXPECTS(max <= std::numeric_limits<cudf::size_type>::max(),
                    "count should not have values larger than size_type's limit.");
     }
-    rmm::device_vector<cudf::size_type> offsets(p_column->size());
+    rmm::device_uvector<cudf::size_type> offsets(p_column->size(), stream);
     thrust::inclusive_scan(rmm::exec_policy(stream)->on(stream),
                            p_column->begin<T>(),
                            p_column->end<T>(),
@@ -98,7 +99,7 @@ struct compute_offsets {
   }
 
   template <typename T>
-  std::enable_if_t<not std::is_integral<T>::value, rmm::device_vector<cudf::size_type>> operator()(
+  std::enable_if_t<not std::is_integral<T>::value, rmm::device_uvector<cudf::size_type>> operator()(
     bool check_count, cudaStream_t stream)
   {
     CUDF_FAIL("count value should be a integral type.");
@@ -122,8 +123,8 @@ std::unique_ptr<table> repeat(table_view const& input_table,
 
   auto offsets = cudf::type_dispatcher(count.type(), compute_offsets{&count}, check_count, stream);
 
-  size_type output_size{offsets.back()};
-  rmm::device_vector<size_type> indices(output_size);
+  size_type output_size{offsets.back_element(stream)};
+  rmm::device_uvector<size_type> indices(output_size, stream);
   thrust::upper_bound(rmm::exec_policy(stream)->on(stream),
                       offsets.begin(),
                       offsets.end(),
